@@ -1,0 +1,7 @@
+default: blinky
+build_dir: D:/__WORKSPACE__/_nrf_/blinky/build_1
+domains:
+  - name: blinky
+    build_dir: D:/__WORKSPACE__/_nrf_/blinky/build_1/blinky
+flash_order:
+  - blinky

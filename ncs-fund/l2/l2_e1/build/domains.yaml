@@ -1,0 +1,7 @@
+default: l2_e1
+build_dir: D:/__WORKSPACE__/_nrf_/ncs-fund/l2/l2_e1/build
+domains:
+  - name: l2_e1
+    build_dir: D:/__WORKSPACE__/_nrf_/ncs-fund/l2/l2_e1/build/l2_e1
+flash_order:
+  - l2_e1
