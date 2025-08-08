@@ -1,7 +1,0 @@
-default: l2_e2
-build_dir: D:/__Git__/nrf_academy/ncs-fund/l2/l2_e2/build
-domains:
-  - name: l2_e2
-    build_dir: D:/__Git__/nrf_academy/ncs-fund/l2/l2_e2/build/l2_e2
-flash_order:
-  - l2_e2

@@ -1,6 +1,7 @@
 {
     "nrf-connect.applications": [
-        "${workspaceFolder}\\blinky",
-        "${workspaceFolder}\\ncs-fund\\l2\\l2_e1"
+        "${workspaceFolder}\\ncs-fund\\l2\\l2_e1",
+        "${workspaceFolder}\\ncs-fund\\l2\\l2_e2",
+        "${workspaceFolder}\\blinky"
     ]
 }
