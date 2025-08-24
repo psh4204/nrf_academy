@@ -1,13 +1,12 @@
 {
     "nrf-connect.applications": [
-        "${workspaceFolder}\\ncs-fund\\l2\\l2_e1",
-        "${workspaceFolder}\\ncs-fund\\l2\\l2_e2",
-        "${workspaceFolder}\\blinky",
-        "${workspaceFolder}\\ncs-fund\\l3\\l3_e1",
-        "${workspaceFolder}\\ncs-fund\\l3\\l3_e2"
+        "${workspaceFolder}\\ncs-fund\\l7\\l7_e1",
+        "${workspaceFolder}\\ncs-fund\\l7\\l7_e2",
+        "${workspaceFolder}\\ncs-fund\\l7\\l7_e3"
     ],
     "files.associations": {
         "myfunction.h": "c",
-        "random": "c"
+        "random": "c",
+        "kernel.h": "c"
     }
 }
