@@ -2,11 +2,14 @@
     "nrf-connect.applications": [
         "${workspaceFolder}\\ncs-fund\\l7\\l7_e1",
         "${workspaceFolder}\\ncs-fund\\l7\\l7_e2",
-        "${workspaceFolder}\\ncs-fund\\l7\\l7_e3"
+        "${workspaceFolder}\\ncs-fund\\l7\\l7_e3",
+        "${workspaceFolder}\\ncs-fund\\l8\\l8_e1",
+        "${workspaceFolder}\\ncs-fund\\l8\\l8_e2"
     ],
     "files.associations": {
         "myfunction.h": "c",
         "random": "c",
-        "kernel.h": "c"
+        "kernel.h": "c",
+        "typeinfo": "c"
     }
 }
