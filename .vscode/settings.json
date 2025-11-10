@@ -6,7 +6,8 @@
         "${workspaceFolder}\\ncs-fund\\l8\\l8_e1",
         "${workspaceFolder}\\ncs-fund\\l8\\l8_e2",
         "${workspaceFolder}\\peripheral_lbs",
-        "${workspaceFolder}\\bt-fund\\l2\\l2_e1"
+        "${workspaceFolder}\\bt-fund\\l2\\l2_e1",
+        "${workspaceFolder}\\bt-fund\\l2\\l2_e2"
     ],
     "files.associations": {
         "myfunction.h": "c",
