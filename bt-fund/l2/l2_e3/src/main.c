@@ -13,7 +13,7 @@
 #include <zephyr/bluetooth/uuid.h>
 
 /* STEP 4.1 - Include the header file for managing Bluetooth LE addresses */
-
+#include <zephyr/bluetooth/addr.h>
 #include <dk_buttons_and_leds.h>
 
 /* STEP 5.1 - Create the advertising parameter for connectable advertising */
@@ -45,20 +45,23 @@ static const struct bt_data sd[] = {
 /* Disconnect 시 (1 ~ 4) 순으로 흘러감 */
 static struct k_work adv_work;
 
-// (4) adv 시작
-static void advertising_start(void)
+// (4) 핸들러를 통해 adv 시작
+static void adv_work_handler(struct k_work *work)
 {
 	int err = bt_le_adv_start(adv_param, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
+
 	if (err) {
-        printk("Advertising failed to start (err: %d)\n", err);
-    }
-    printk("Advertising successfully started\n");
+		printk("Advertising failed to start (err %d)\n", err);
+		return;
+	}
+
+	printk("Advertising successfully started\n");
 }
 
 // (3) 워크큐에 등록된 adv 핸들러 호출
-static void adv_work_handler(struct k_work *work)
+static void advertising_start(void)
 {
-	advertising_start();
+	k_work_submit(&adv_work);
 }
 
 // (2) 콜백에서 워크큐 호출
@@ -89,7 +92,7 @@ int main(void)
 
 	/* STEP 4.2 - Change the random static address */
 	bt_addr_le_t addr;
-	err = bt_addr_le_from_str("DD:EE:AA:DD:CC:OF:EE", "random", &addr);
+	err = bt_addr_le_from_str("DD:EA:DD:C0:FF:EE", "random", &addr);
 	if (err) {
 		printk("Invalid BT address (err: %d)\n", err);
 	}
