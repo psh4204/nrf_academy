@@ -10,12 +10,18 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/gap.h>
 /* STEP 3.2.1 - Include the header file of the UUID helper macros and definitions */
+#include <zephyr/bluetooth/uuid.h>
 
 /* STEP 4.1 - Include the header file for managing Bluetooth LE addresses */
 
 #include <dk_buttons_and_leds.h>
 
 /* STEP 5.1 - Create the advertising parameter for connectable advertising */
+static const struct bt_le_adv_param *adv_param =
+        BT_LE_ADV_PARAM(BT_LE_ADV_OPT_CONNECTABLE,
+                        800, /* Min Advertising Interval 500ms */
+                        801, /* Max Advertising Interval 500.625ms */
+                        NULL); /* undirected advertising */
 
 LOG_MODULE_REGISTER(Lesson2_Exercise3, LOG_LEVEL_INF);
 
@@ -27,14 +33,46 @@ LOG_MODULE_REGISTER(Lesson2_Exercise3, LOG_LEVEL_INF);
 static struct k_work adv_work;
 static const struct bt_data ad[] = {
 	/* STEP 3.1 - Set the flags and populate the device name in the advertising packet */
-
+	BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
+	BT_DATA(BT_DATA_NAME_COMPLETE, DEVICE_NAME, DEVICE_NAME_LEN),
 };
 
 static const struct bt_data sd[] = {
 	/* STEP 3.2.2 - Include the 16-bytes (128-Bits) UUID of the LBS service in the scan response packet */
-
+	BT_DATA_BYTES(BT_DATA_UUID128_ALL, BT_UUID_128_ENCODE(0x00001523, 0x1212, 0xefde, 0x1523, 0x785feabcd123)),
 };
 /* STEP 5.2 - Resume advertising after a disconnection */
+/* Disconnect 시 (1 ~ 4) 순으로 흘러감 */
+static struct k_work adv_work;
+
+// (4) adv 시작
+static void advertising_start(void)
+{
+	int err = bt_le_adv_start(adv_param, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
+	if (err) {
+        printk("Advertising failed to start (err: %d)\n", err);
+    }
+    printk("Advertising successfully started\n");
+}
+
+// (3) 워크큐에 등록된 adv 핸들러 호출
+static void adv_work_handler(struct k_work *work)
+{
+	advertising_start();
+}
+
+// (2) 콜백에서 워크큐 호출
+static void recycled_cb(void)
+{
+	printk("Connection OBJ available .. Disconnect is Complete!!!\n");
+	k_work_submit(&adv_work);
+}
+
+// (1) 콜백으로 recycled콜백 호출
+BT_CONN_CB_DEFINE(conn_callbacks) = {
+	.recycled = recycled_cb,
+};
+
 
 int main(void)
 {
@@ -50,6 +88,16 @@ int main(void)
 	}
 
 	/* STEP 4.2 - Change the random static address */
+	bt_addr_le_t addr;
+	err = bt_addr_le_from_str("DD:EE:AA:DD:CC:OF:EE", "random", &addr);
+	if (err) {
+		printk("Invalid BT address (err: %d)\n", err);
+	}
+
+	err = bt_id_create(&addr, NULL);
+	if (err < 0) {
+		printk("Creating new ID failed (err: %d)\n", err);
+	}
 
 	err = bt_enable(NULL);
 	if (err) {
@@ -59,6 +107,8 @@ int main(void)
 
 	LOG_INF("Bluetooth initialized\n");
 	/* STEP 5.3 - Start connectable advertising */
+	k_work_init(&adv_work, adv_work_handler);
+	advertising_start();
 
 	LOG_INF("Advertising successfully started\n");
 

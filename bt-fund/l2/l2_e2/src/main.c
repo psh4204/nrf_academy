@@ -67,7 +67,6 @@ static void button_changed(uint32_t button_state, uint32_t has_changed)
         adv_mfg_data.number_press +=1;
         // ADV 데이터를 업데이트 하는 함수
         bt_le_adv_update_data(ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
-		
     }
 }
 static int init_button(void)
