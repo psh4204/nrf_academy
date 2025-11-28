@@ -4,17 +4,18 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
-#include <zephyr/kernel.h>
-#include <zephyr/logging/log.h>
+#include <zephyr/bluetooth/addr.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/gap.h>
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/uuid.h>
-#include <zephyr/bluetooth/addr.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 /* STEP 1 - Include the header file for managing Bluetooth LE Connections */
-
+#include <zephyr/bluetooth/conn.h>
 /* STEP 8.2 - Include the header file for the LED Button Service */
-
+#include <bluetooth/services/lbs.h>
+#define CONNECTION_STATUS_LED DK_LED2
 #include <dk_buttons_and_leds.h>
 
 #define USER_BUTTON DK_BTN1_MSK
@@ -29,9 +30,9 @@ static struct k_work adv_work;
 static const struct bt_le_adv_param *adv_param = BT_LE_ADV_PARAM(
 	(BT_LE_ADV_OPT_CONN |
 	 BT_LE_ADV_OPT_USE_IDENTITY), /* Connectable advertising and use identity address */
-	BT_GAP_ADV_FAST_INT_MIN_1, /* 0x30 units, 48 units, 30ms */
-	BT_GAP_ADV_FAST_INT_MAX_1, /* 0x60 units, 96 units, 60ms */
-	NULL); /* Set to NULL for undirected advertising */
+	BT_GAP_ADV_FAST_INT_MIN_1,	  /* 0x30 units, 48 units, 30ms */
+	BT_GAP_ADV_FAST_INT_MAX_1,	  /* 0x60 units, 96 units, 60ms */
+	NULL);						  /* Set to NULL for undirected advertising */
 
 LOG_MODULE_REGISTER(Lesson3_Exercise1, LOG_LEVEL_INF);
 
@@ -45,14 +46,15 @@ static const struct bt_data ad[] = {
 
 static const struct bt_data sd[] = {
 	BT_DATA_BYTES(BT_DATA_UUID128_ALL,
-			  BT_UUID_128_ENCODE(0x00001523, 0x1212, 0xefde, 0x1523, 0x785feabcd123)),
+				  BT_UUID_128_ENCODE(0x00001523, 0x1212, 0xefde, 0x1523, 0x785feabcd123)),
 };
 
 static void adv_work_handler(struct k_work *work)
 {
 	int err = bt_le_adv_start(adv_param, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
 
-	if (err) {
+	if (err)
+	{
 		LOG_ERR("Advertising failed to start (err %d)", err);
 		return;
 	}
@@ -66,16 +68,59 @@ static void advertising_start(void)
 }
 
 /* STEP 2.2 - Implement the callback functions */
+void on_connected(struct bt_conn *conn, uint8_t err)
+{
+	if (err)
+	{
+		LOG_ERR("Connection err %d", err);
+		return;
+	}
+	LOG_INF("Connected");
+	my_conn = bt_conn_ref(conn); // Stack에 연결객체(conn)을 살려두라는 API
+
+	dk_set_led(CONNECTION_STATUS_LED, 1); // LED ON
+}
+
+void on_disconnected(struct bt_conn *conn, uint8_t reason)
+{
+	LOG_INF("Disconnected. Reason %d", reason);
+	bt_conn_unref(my_conn); // Stack에 연결객체(conn)을 지우라는 API
+
+	dk_set_led(CONNECTION_STATUS_LED, 0); // LED OFF
+}
+
+void on_recycled(void)
+{
+	advertising_start();
+}
 
 /* STEP 2.1 - Declare the connection_callback structure */
+struct bt_conn_cb connection_callbacks = {
+	.connected = on_connected,
+	.disconnected = on_disconnected,
+	.recycled = on_recycled,
+};
 
 /* STEP 8.3 - Send a notification using the LBS characteristic. */
+static void button_changed(uint32_t button_state, uint32_t has_changed)
+{
+	int err;
+	bool user_button_pressed = (button_state & USER_BUTTON) ? true:false;
+	
+	if(has_changed & USER_BUTTON) {
+		LOG_INF("Button %s", (user_button_pressed ? "pressed":"released"));
+		err = bt_lbs_send_button_state(user_button_pressed);
+		if(err) {
+			LOG_ERR("Couldn't send notification. (err: %d)",err);
+		}
+	}
+}
 
 static int init_button(void)
 {
 	int err = 0;
 	/* STEP 8.4 - Complete the implementation of the init_button() function. */
-
+	err = dk_buttons_init(button_changed);
 	return err;
 }
 
@@ -87,21 +132,29 @@ int main(void)
 	LOG_INF("Starting Lesson 3 - Exercise 1\n");
 
 	err = dk_leds_init();
-	if (err) {
+	if (err)
+	{
 		LOG_ERR("LEDs init failed (err %d)", err);
 		return -1;
 	}
 
 	err = init_button();
-	if (err) {
+	if (err)
+	{
 		LOG_INF("Button init failed (err %d)", err);
 		return -1;
 	}
 
 	/* STEP 2.3 - Register our custom callbacks */
+	err = bt_conn_cb_register(&connection_callbacks);
+	if (err)
+	{
+		LOG_ERR("Connection callback register failed (err %d)", err);
+	}
 
 	err = bt_enable(NULL);
-	if (err) {
+	if (err)
+	{
 		LOG_ERR("Bluetooth init failed (err %d)", err);
 		return -1;
 	}
@@ -110,7 +163,8 @@ int main(void)
 	k_work_init(&adv_work, adv_work_handler);
 	advertising_start();
 
-	for (;;) {
+	for (;;)
+	{
 		dk_set_led(RUN_STATUS_LED, (++blink_status) % 2);
 		k_sleep(K_MSEC(RUN_LED_BLINK_INTERVAL));
 	}

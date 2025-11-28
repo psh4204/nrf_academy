@@ -8,12 +8,16 @@
         "${workspaceFolder}\\peripheral_lbs",
         "${workspaceFolder}\\bt-fund\\l2\\l2_e1",
         "${workspaceFolder}\\bt-fund\\l2\\l2_e2",
-        "${workspaceFolder}\\bt-fund\\l2\\l2_e3"
+        "${workspaceFolder}\\bt-fund\\l2\\l2_e3",
+        "${workspaceFolder}\\bt-fund\\l3\\l3_e1",
+        "${workspaceFolder}\\bt-fund\\l3\\l3_e2"
     ],
     "files.associations": {
         "myfunction.h": "c",
         "random": "c",
         "kernel.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "gap.h": "c",
+        "dk_buttons_and_leds.h": "c"
     }
 }
